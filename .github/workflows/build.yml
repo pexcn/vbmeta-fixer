@@ -41,10 +41,16 @@ jobs:
           } >> $GITHUB_ENV
 
       - name: Build with Gradle
+        env:
+          KEYSTORE_PATH: "../release.keystore"
+          KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGN_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
         working-directory: service
         run: |
-          ./gradlew assembleDebug
-          cp -f app/build/outputs/apk/debug/app-debug.apk ../module/service/service.apk
+          echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > release.keystore
+          ./gradlew assembleRelease
+          cp -f app/build/outputs/apk/release/app-release.apk ../module/service/service.apk
 
       - name: Upload APK
         if: github.event.inputs.module != 'true'
